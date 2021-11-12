@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+option go_package = "grpc/proto";
+
+message NewCartItem {
+    string productSku = 1;
+    string userId = 2;
+    int32 quantity = 3;
+}
+
+message CartItem {
+    string id = 1;
+    string productSku = 2;
+    string userId = 3;
+    int32 quantity = 4;
+}
+
+service CartService {
+    rpc AddToCart(NewCartItem) returns (CartItem);
+}
