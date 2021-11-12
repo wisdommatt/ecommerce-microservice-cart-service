@@ -70,3 +70,51 @@ func TestCartServiceImpl_SaveCartItem(t *testing.T) {
 		})
 	}
 }
+
+func TestCartServiceImpl_GetUserCartItems(t *testing.T) {
+	cartRepo := &mocks.Repository{}
+	cartRepo.On("GetUserCartItems", mock.Anything, "invalid.user").Return(nil, errors.New("an error occured"))
+	cartRepo.On("GetUserCartItems", mock.Anything, "valid.user").Return([]cart.CartItem{
+		{ProductSku: "sku.1"}, {ProductSku: "sku.2"}, {ProductSku: "sku.3"},
+	}, nil)
+
+	type args struct {
+		userId string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []cart.CartItem
+		wantErr bool
+	}{
+		{
+			name:    "empty userId",
+			wantErr: true,
+		},
+		{
+			name:    "GetUserCartItems repo implementation with error",
+			args:    args{userId: "invalid.user"},
+			wantErr: true,
+		},
+		{
+			name: "GetUserCartItems repo implementation without error",
+			args: args{userId: "valid.user"},
+			want: []cart.CartItem{
+				{ProductSku: "sku.1"}, {ProductSku: "sku.2"}, {ProductSku: "sku.3"},
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			s := NewCartService(cartRepo)
+			got, err := s.GetUserCartItems(context.Background(), tt.args.userId)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("CartServiceImpl.GetUserCartItems() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("CartServiceImpl.GetUserCartItems() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

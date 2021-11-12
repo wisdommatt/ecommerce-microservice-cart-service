@@ -15,6 +15,15 @@ message CartItem {
     int32 quantity = 4;
 }
 
+message GetUserCartInput {
+    string userId = 1;
+}
+
+message GetUserCartResponse {
+    repeated CartItem items = 1;
+}
+
 service CartService {
     rpc AddToCart(NewCartItem) returns (CartItem);
+    rpc GetUserCart(GetUserCartInput) returns (GetUserCartResponse);
 }

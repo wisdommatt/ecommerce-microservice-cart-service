@@ -35,3 +35,24 @@ func (s *CartServer) AddToCart(ctx context.Context, req *proto.NewCartItem) (*pr
 	}
 	return InternalCartItemToProto(newCartItem), nil
 }
+
+// GetUserCart is the grpc handler to get user cart.
+func (s *CartServer) GetUserCart(ctx context.Context, input *proto.GetUserCartInput) (*proto.GetUserCartResponse, error) {
+	span := opentracing.StartSpan("GetUserCart")
+	defer span.Finish()
+	ext.SpanKindRPCServer.Set(span)
+	span.SetTag("param.input", input)
+
+	ctx = opentracing.ContextWithSpan(ctx, span)
+	cartItems, err := s.cartService.GetUserCartItems(ctx, input.UserId)
+	if err != nil {
+		return nil, err
+	}
+	protoItems := []*proto.CartItem{}
+	for _, i := range cartItems {
+		protoItems = append(protoItems, InternalCartItemToProto(&i))
+	}
+	return &proto.GetUserCartResponse{
+		Items: protoItems,
+	}, nil
+}

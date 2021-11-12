@@ -6,9 +6,9 @@ services:
     image: golang:1.17.2-stretch
     command: ["sh", "-c", "go mod download && go run main.go"]
     ports:
-      - '2424:2424'
+      - '2525:2525'
     environment:
-      - PORT=2424
+      - PORT=2525
     working_dir: /app
     volumes:
       - ./:/app

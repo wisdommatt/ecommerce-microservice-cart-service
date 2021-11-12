@@ -15,6 +15,29 @@ type Repository struct {
 	mock.Mock
 }
 
+// GetUserCartItems provides a mock function with given fields: ctx, userId
+func (_m *Repository) GetUserCartItems(ctx context.Context, userId string) ([]cart.CartItem, error) {
+	ret := _m.Called(ctx, userId)
+
+	var r0 []cart.CartItem
+	if rf, ok := ret.Get(0).(func(context.Context, string) []cart.CartItem); ok {
+		r0 = rf(ctx, userId)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).([]cart.CartItem)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, string) error); ok {
+		r1 = rf(ctx, userId)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // SaveCartItem provides a mock function with given fields: ctx, item
 func (_m *Repository) SaveCartItem(ctx context.Context, item *cart.CartItem) error {
 	ret := _m.Called(ctx, item)

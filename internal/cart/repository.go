@@ -15,6 +15,7 @@ import (
 // object.
 type Repository interface {
 	SaveCartItem(ctx context.Context, item *CartItem) error
+	GetUserCartItems(ctx context.Context, userId string) ([]CartItem, error)
 }
 
 // CartRepo is the default implementation for Repository interface.
@@ -52,6 +53,23 @@ func (r *CartRepo) SaveCartItem(ctx context.Context, item *CartItem) error {
 		return tx.Error
 	}
 	return nil
+}
+
+// GetUserCartItems retrieves cart items from the database, filtering by userId.
+func (r *CartRepo) GetUserCartItems(ctx context.Context, userId string) ([]CartItem, error) {
+	span := r.tracer.StartSpan("GetUserCartItems", opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()))
+	defer span.Finish()
+	r.setPostGresComponentTags(span, "cart")
+	span.SetTag("param.userId", userId)
+
+	var cartItems []CartItem
+	result := r.orm.Where("user_id = ?", userId).Find(&cartItems)
+	if result.Error != nil {
+		ext.Error.Set(span, true)
+		span.LogFields(log.Error(result.Error), log.Event("gorm.db.Where.Find"))
+		return nil, result.Error
+	}
+	return cartItems, nil
 }
 
 func toJSON(i interface{}) string {

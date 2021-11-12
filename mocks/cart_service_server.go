@@ -37,6 +37,29 @@ func (_m *CartServiceServer) AddToCart(_a0 context.Context, _a1 *proto.NewCartIt
 	return r0, r1
 }
 
+// GetUserCart provides a mock function with given fields: _a0, _a1
+func (_m *CartServiceServer) GetUserCart(_a0 context.Context, _a1 *proto.GetUserCartInput) (*proto.GetUserCartResponse, error) {
+	ret := _m.Called(_a0, _a1)
+
+	var r0 *proto.GetUserCartResponse
+	if rf, ok := ret.Get(0).(func(context.Context, *proto.GetUserCartInput) *proto.GetUserCartResponse); ok {
+		r0 = rf(_a0, _a1)
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(*proto.GetUserCartResponse)
+		}
+	}
+
+	var r1 error
+	if rf, ok := ret.Get(1).(func(context.Context, *proto.GetUserCartInput) error); ok {
+		r1 = rf(_a0, _a1)
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // mustEmbedUnimplementedCartServiceServer provides a mock function with given fields:
 func (_m *CartServiceServer) mustEmbedUnimplementedCartServiceServer() {
 	_m.Called()
