@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
 	"github.com/uber/jaeger-client-go/config"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func main() {
@@ -19,7 +21,13 @@ func main() {
 
 	mustLoadDotenv(log)
 
-	tracer := initTracer("product-service")
+	_, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
+	if err != nil {
+		log.WithError(err).WithField("dbURL", os.Getenv("DATABASE_URL")).
+			Fatal("an error occured while connecting to postgres")
+	}
+
+	tracer := initTracer("cart-service")
 	opentracing.SetGlobalTracer(tracer)
 }
 

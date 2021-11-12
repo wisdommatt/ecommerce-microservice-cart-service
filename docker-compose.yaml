@@ -1,0 +1,28 @@
+version: "3"
+
+services:
+  app:
+    container_name: cart-service-app
+    image: golang:1.17.2-stretch
+    command: ["sh", "-c", "go mod download && go run main.go"]
+    ports:
+      - '2424:2424'
+    environment:
+      - PORT=2424
+    working_dir: /app
+    volumes:
+      - ./:/app
+
+  postgres:
+    image: postgres:12-alpine
+    command:
+      - 'postgres'
+      - '-c'
+      - 'max_connections=100'
+      - '-c'
+      - 'shared_buffers=256MB'
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: cart_service
+    ports:
+      - 5333:5432
