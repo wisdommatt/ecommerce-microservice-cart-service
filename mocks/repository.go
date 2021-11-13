@@ -15,6 +15,20 @@ type Repository struct {
 	mock.Mock
 }
 
+// BulkRemoveItemsFromUserCart provides a mock function with given fields: ctx, userId, itemIds
+func (_m *Repository) BulkRemoveItemsFromUserCart(ctx context.Context, userId string, itemIds []string) error {
+	ret := _m.Called(ctx, userId, itemIds)
+
+	var r0 error
+	if rf, ok := ret.Get(0).(func(context.Context, string, []string) error); ok {
+		r0 = rf(ctx, userId, itemIds)
+	} else {
+		r0 = ret.Error(0)
+	}
+
+	return r0
+}
+
 // GetUserCartItems provides a mock function with given fields: ctx, userId
 func (_m *Repository) GetUserCartItems(ctx context.Context, userId string) ([]cart.CartItem, error) {
 	ret := _m.Called(ctx, userId)

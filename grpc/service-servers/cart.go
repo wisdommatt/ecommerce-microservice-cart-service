@@ -56,3 +56,27 @@ func (s *CartServer) GetUserCart(ctx context.Context, input *proto.GetUserCartIn
 		Items: protoItems,
 	}, nil
 }
+
+// RemoveItemsFromCart is the grpc handler to remove items from user cart.
+func (s *CartServer) RemoveItemsFromCart(
+	ctx context.Context, input *proto.RemoveItemsFromCartInput,
+) (*proto.RemoveItemsFromCartResponse, error) {
+
+	span := opentracing.StartSpan("RemoveItemsFromCart")
+	defer span.Finish()
+	ext.SpanKindRPCServer.Set(span)
+	span.SetTag("param.input", input)
+
+	ctx = opentracing.ContextWithSpan(ctx, span)
+	cartItems, err := s.cartService.BulkRemoveItemsFromUserCart(ctx, input.UserId, input.ItemIds)
+	if err != nil {
+		return nil, err
+	}
+	protoItems := []*proto.CartItem{}
+	for _, i := range cartItems {
+		protoItems = append(protoItems, InternalCartItemToProto(&i))
+	}
+	return &proto.RemoveItemsFromCartResponse{
+		Items: protoItems,
+	}, nil
+}

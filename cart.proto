@@ -23,7 +23,17 @@ message GetUserCartResponse {
     repeated CartItem items = 1;
 }
 
+message RemoveItemsFromCartInput {
+    string userId = 1;
+    repeated string itemIds = 2;
+}
+
+message RemoveItemsFromCartResponse {
+    repeated CartItem items = 1;
+}
+
 service CartService {
     rpc AddToCart(NewCartItem) returns (CartItem);
     rpc GetUserCart(GetUserCartInput) returns (GetUserCartResponse);
+    rpc RemoveItemsFromCart(RemoveItemsFromCartInput) returns (RemoveItemsFromCartResponse);
 }

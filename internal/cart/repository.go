@@ -16,6 +16,7 @@ import (
 type Repository interface {
 	SaveCartItem(ctx context.Context, item *CartItem) error
 	GetUserCartItems(ctx context.Context, userId string) ([]CartItem, error)
+	BulkRemoveItemsFromUserCart(ctx context.Context, userId string, itemIds []string) error
 }
 
 // CartRepo is the default implementation for Repository interface.
@@ -40,12 +41,13 @@ func (r *CartRepo) setPostGresComponentTags(span opentracing.Span, tableName str
 
 // SaveCartItem saves a cart item to the database.
 func (r *CartRepo) SaveCartItem(ctx context.Context, item *CartItem) error {
+	item.TimeAdded = time.Now()
+	item.LastUpdated = time.Now()
 	span := r.tracer.StartSpan("SaveCartItem", opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()))
 	defer span.Finish()
 	r.setPostGresComponentTags(span, "cart")
 	span.LogFields(log.Object("param.item", toJSON(item)))
-	item.TimeAdded = time.Now()
-	item.LastUpdated = time.Now()
+
 	tx := r.orm.Save(item)
 	if tx.Error != nil {
 		ext.Error.Set(span, true)
@@ -70,6 +72,29 @@ func (r *CartRepo) GetUserCartItems(ctx context.Context, userId string) ([]CartI
 		return nil, result.Error
 	}
 	return cartItems, nil
+}
+
+// BulkRemoveItemsFromUserCart removes multiple items from user by ids.
+func (r *CartRepo) BulkRemoveItemsFromUserCart(ctx context.Context, userId string, itemIds []string) error {
+	span := r.tracer.StartSpan(
+		"BulkRemoveItemsFromUserCart",
+		opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()),
+	)
+	defer span.Finish()
+	r.setPostGresComponentTags(span, "cart")
+	span.SetTag("param.userId", userId)
+	span.SetTag("param.itemIds", itemIds)
+
+	result := r.orm.Where("user_id = ?", userId).Delete(&CartItem{}, itemIds)
+	if result.Error != nil {
+		ext.Error.Set(span, true)
+		span.LogFields(
+			log.Error(result.Error),
+			log.Event("gorm.db.Delete"),
+		)
+		return result.Error
+	}
+	return nil
 }
 
 func toJSON(i interface{}) string {
