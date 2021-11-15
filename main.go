@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/joho/godotenv"
+	otgrpc "github.com/opentracing-contrib/go-grpc"
 	"github.com/opentracing/opentracing-go"
 	"github.com/sirupsen/logrus"
 	"github.com/uber/jaeger-client-go"
@@ -49,7 +50,10 @@ func main() {
 	if err != nil {
 		log.WithError(err).WithField("port", port).Fatal("an error occured while listening on tcp port")
 	}
-	grpcServer := grpc.NewServer()
+	grpcServer := grpc.NewServer(
+		grpc.UnaryInterceptor(otgrpc.OpenTracingServerInterceptor(tracer)),
+		grpc.StreamInterceptor(otgrpc.OpenTracingStreamServerInterceptor(tracer)),
+	)
 	proto.RegisterCartServiceServer(grpcServer, servers.NewCartServer(cartService))
 	log.WithField("port", port).Info("app running ...")
 	log.WithField("port", port).Fatal(grpcServer.Serve(lis))
