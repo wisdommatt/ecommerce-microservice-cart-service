@@ -43,7 +43,7 @@ func (r *CartRepo) setPostGresComponentTags(span opentracing.Span, tableName str
 func (r *CartRepo) SaveCartItem(ctx context.Context, item *CartItem) error {
 	item.TimeAdded = time.Now()
 	item.LastUpdated = time.Now()
-	span := r.tracer.StartSpan("SaveCartItem", opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()))
+	span, _ := opentracing.StartSpanFromContextWithTracer(ctx, r.tracer, "SaveCartItem")
 	defer span.Finish()
 	r.setPostGresComponentTags(span, "cart")
 	span.LogFields(log.Object("param.item", toJSON(item)))
@@ -59,7 +59,7 @@ func (r *CartRepo) SaveCartItem(ctx context.Context, item *CartItem) error {
 
 // GetUserCartItems retrieves cart items from the database, filtering by userId.
 func (r *CartRepo) GetUserCartItems(ctx context.Context, userId string) ([]CartItem, error) {
-	span := r.tracer.StartSpan("GetUserCartItems", opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()))
+	span, _ := opentracing.StartSpanFromContextWithTracer(ctx, r.tracer, "GetUserCartItems")
 	defer span.Finish()
 	r.setPostGresComponentTags(span, "cart")
 	span.SetTag("param.userId", userId)
@@ -76,10 +76,7 @@ func (r *CartRepo) GetUserCartItems(ctx context.Context, userId string) ([]CartI
 
 // BulkRemoveItemsFromUserCart removes multiple items from user by ids.
 func (r *CartRepo) BulkRemoveItemsFromUserCart(ctx context.Context, userId string, itemIds []string) error {
-	span := r.tracer.StartSpan(
-		"BulkRemoveItemsFromUserCart",
-		opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()),
-	)
+	span, _ := opentracing.StartSpanFromContextWithTracer(ctx, r.tracer, "BulkRemoveItemsFromUserCart")
 	defer span.Finish()
 	r.setPostGresComponentTags(span, "cart")
 	span.SetTag("param.userId", userId)

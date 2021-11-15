@@ -33,15 +33,9 @@ func NewCartService(cartRepo cart.Repository, tracer opentracing.Tracer) *CartSe
 
 // SaveCartItem is the service handler to save an item to cart.
 func (s *CartServiceImpl) SaveCartItem(ctx context.Context, item *cart.CartItem) (*cart.CartItem, error) {
-	span := s.tracer.StartSpan("SaveCartItem")
-	if opentracing.SpanFromContext(ctx) != nil {
-		span = s.tracer.StartSpan(
-			"SaveCartItem",
-			opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()),
-		)
-	}
+	span, _ := opentracing.StartSpanFromContextWithTracer(ctx, s.tracer, "SaveCartItem")
 	defer span.Finish()
-
+	ctx = opentracing.ContextWithSpan(ctx, span)
 	err := s.cartRepo.SaveCartItem(opentracing.ContextWithSpan(ctx, span), item)
 	if err != nil {
 		return nil, errors.New("an error occured, please try again later")
@@ -50,15 +44,9 @@ func (s *CartServiceImpl) SaveCartItem(ctx context.Context, item *cart.CartItem)
 }
 
 func (s *CartServiceImpl) GetUserCartItems(ctx context.Context, userId string) ([]cart.CartItem, error) {
-	span := s.tracer.StartSpan("GetUserCartItems")
-	if opentracing.SpanFromContext(ctx) != nil {
-		span = s.tracer.StartSpan(
-			"GetUserCartItems",
-			opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()),
-		)
-	}
+	span, _ := opentracing.StartSpanFromContextWithTracer(ctx, s.tracer, "GetUserCartItems")
 	defer span.Finish()
-
+	ctx = opentracing.ContextWithSpan(ctx, span)
 	if userId == "" {
 		ext.Error.Set(span, true)
 		span.LogFields(log.Error(errors.New("userId should not be empty")))
@@ -75,15 +63,9 @@ func (s *CartServiceImpl) BulkRemoveItemsFromUserCart(
 	ctx context.Context, userId string, itemIds []string,
 ) ([]cart.CartItem, error) {
 
-	span := s.tracer.StartSpan("BulkRemoveItemsFromUserCart")
-	if opentracing.SpanFromContext(ctx) != nil {
-		span = s.tracer.StartSpan(
-			"BulkRemoveItemsFromUserCart",
-			opentracing.ChildOf(opentracing.SpanFromContext(ctx).Context()),
-		)
-	}
+	span, _ := opentracing.StartSpanFromContextWithTracer(ctx, s.tracer, "BulkRemoveItemsFromUserCart")
 	defer span.Finish()
-
+	ctx = opentracing.ContextWithSpan(ctx, span)
 	if userId == "" || len(itemIds) == 0 {
 		ext.Error.Set(span, true)
 		span.LogFields(log.Error(errors.New("all fields are required")))

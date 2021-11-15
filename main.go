@@ -43,7 +43,7 @@ func main() {
 	}
 
 	cartRepo := cart.NewRepository(db, initTracer("postgres"))
-	cartService := services.NewCartService(cartRepo, initTracer("services"))
+	cartService := services.NewCartService(cartRepo, initTracer("cart.ServiceHandlers"))
 
 	lis, err := net.Listen("tcp", ":"+port)
 	if err != nil {

@@ -23,12 +23,12 @@ func NewCartServer(cartService services.CartService) *CartServer {
 
 // AddToCart is the grpc handler to add item to cart.
 func (s *CartServer) AddToCart(ctx context.Context, req *proto.NewCartItem) (*proto.CartItem, error) {
-	span := opentracing.StartSpan("AddToCart")
+	span, _ := opentracing.StartSpanFromContext(ctx, "AddToCart")
 	defer span.Finish()
 	ext.SpanKindRPCServer.Set(span)
 	span.SetTag("param.req", req)
-
 	ctx = opentracing.ContextWithSpan(ctx, span)
+
 	newCartItem, err := s.cartService.SaveCartItem(ctx, ProtoNewCartItemToInternal(req))
 	if err != nil {
 		return nil, err
@@ -38,12 +38,12 @@ func (s *CartServer) AddToCart(ctx context.Context, req *proto.NewCartItem) (*pr
 
 // GetUserCart is the grpc handler to get user cart.
 func (s *CartServer) GetUserCart(ctx context.Context, input *proto.GetUserCartInput) (*proto.GetUserCartResponse, error) {
-	span := opentracing.StartSpan("GetUserCart")
+	span, _ := opentracing.StartSpanFromContext(ctx, "GetUserCart")
 	defer span.Finish()
 	ext.SpanKindRPCServer.Set(span)
 	span.SetTag("param.input", input)
-
 	ctx = opentracing.ContextWithSpan(ctx, span)
+
 	cartItems, err := s.cartService.GetUserCartItems(ctx, input.UserId)
 	if err != nil {
 		return nil, err
@@ -62,12 +62,12 @@ func (s *CartServer) RemoveItemsFromCart(
 	ctx context.Context, input *proto.RemoveItemsFromCartInput,
 ) (*proto.RemoveItemsFromCartResponse, error) {
 
-	span := opentracing.StartSpan("RemoveItemsFromCart")
+	span, _ := opentracing.StartSpanFromContext(ctx, "RemoveItemsFromCart")
 	defer span.Finish()
 	ext.SpanKindRPCServer.Set(span)
 	span.SetTag("param.input", input)
-
 	ctx = opentracing.ContextWithSpan(ctx, span)
+
 	cartItems, err := s.cartService.BulkRemoveItemsFromUserCart(ctx, input.UserId, input.ItemIds)
 	if err != nil {
 		return nil, err
